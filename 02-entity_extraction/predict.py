@@ -16,4 +16,14 @@ if __name__ == '__main__':
 
     writer = csv.writer(args.output)
     for filename in files:
-        writer.writerow([filename, -1])
+        origin = ""
+        destination = ""
+        line = ""
+        company = ""
+        price = ""
+        issued_on = ""
+        available_from = ""
+        expire_on = ""
+        writer.writerow([
+            filename, origin, destination, line, company,
+            price, issued_on, available_from, expire_on])
