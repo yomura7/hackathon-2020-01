@@ -2,6 +2,8 @@ import os
 import sys
 import csv
 import argparse
+import pyocr
+import pyocr.builders
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -13,6 +15,10 @@ if __name__ == '__main__':
         filename for filename in os.listdir(args.image_dir)
         if os.path.splitext(filename)[-1].lower() in ['.jpg', '.png']
     ]
+
+    # Check available OCR tools
+    tools = pyocr.get_available_tools()
+    tool = tools[0]
 
     writer = csv.writer(args.output)
     for filename in files:
