@@ -9,6 +9,8 @@ import pandas
 import re
 import regex
 import io
+import unicodedata
+import datetime
 
 def getFileName(path):
     name = os.path.splitext(os.path.basename(path))[0]
@@ -38,7 +40,7 @@ def parser(filename, text):
     buf = io.StringIO(text)
     line = buf.readline()
     while line:
-        s = line.strip().replace(" ", "")
+        s = unicodedata.normalize("NFKC",line.strip().replace(" ", ""))
         #料金を含んでいるかチェック
         price = findPrice(s)
         if price is not None:  price_list.append(price) 
@@ -59,11 +61,6 @@ def parser(filename, text):
             line = findLine(word)
             if line is not None: line_list = line              
         line = buf.readline()
-    print(station_list)
-    print(comapny_list)
-    print(line_list)
-    print(price_list)
-    print(date_list)
     filename = filename if filename is not None else ""
     origin = station_list[0] if len(station_list) > 0 else ""
     dest = station_list[1] if len(station_list) > 1 else ""
@@ -91,12 +88,36 @@ def findLine(word):
 def findPrice(line):
     prices = priceRegex.findall(line)
     #円￥¥以外の表記に対応するためには以下を修正する
-    if len(prices) is not 0: return re.sub(r'[円￥¥]', "", prices[0])
+    if len(prices) is not 0: return re.sub(r'[円￥¥,]', "", prices[0])
 
 def findDate(line):
     dates = dateRegex.findall(line)
+    if len(dates) is 0:
+        return
+    #最初にマッチした要素を結果にする。修正する必要あるかも
+    date = dates[0]
+    if re.match(r'[0-9]{2}\.-', date) is not None:
+        date = convertFromOmittedDate(date)
+    if re.match(r'[0-9]{4}\.-', date) is not None:
+        date = re.sub(r'\.-', '-', date)
     #年月日、-以外の表記に対応するためには以下を修正する
-    if len(dates) is not 0: return dates[0].replace("年","-").replace("月","-").replace("日","")
+    return date.replace("年","-").replace("月","-").replace("日","").replace(".","-")
+
+#19.-12.21のような省略系の日付を変換する。和暦非対応。
+#2019なのか1919なのか分からないので2000年に倒す
+def convertFromOmittedDate(date):
+    num = int(re.sub(r'\.-.*', '', date))
+    head = None
+    if (thisyear % 100) > num:
+        head = str(int(thisyear / 100)) + str(num)
+    else:
+        head = '19' + str(num)
+    result = head + re.sub(r'.*\.-', '-', date).replace('.','-')
+    return result
+
+def debugSQL(table, column, word):
+    for row in cur.execute('SELECT ' + column + ' FROM ' + table + ' WHERE ' + column + ' like ?', (word,)):
+        print(row)
 
 DB_PATH = './resource/train.db'
 LANGUAGE = "eng+jpn"
@@ -108,8 +129,9 @@ outPath = "./tmp/result.csv"
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 wordBlockRegex = regex.compile(r'[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]+')
-dateRegex = regex.compile('(?:(?:[1-9]|1[0-2])月(?:[1-9]|[12][0-9]|3[01])日)|(?:(?:19[0-9]{2}|20[0-9]{2})-(?:[1-9]|1[0-2])-(?:3[0-1]|[1-2][0-9]|[1-9]))')
-priceRegex = regex.compile('(?:[1-9][0-9]{2,4}円)|(?:[￥¥][1-9][0-9]{2,4})')
+dateRegex = regex.compile('(?:(?:[1-9]|1[0-2])月(?:[1-9]|[12][0-9]|3[01])日)|(?:(?:19[0-9]{2}|20[0-9]{2}|[0-9]{2})\.?-(?:[1-9]|1[0-2])(?:\.|-)(?:3[0-1]|[1-2][0-9]|[1-9]))')
+priceRegex = regex.compile('(?:[1-9][0-9]{2,4}円)|(?:[￥¥][1-9][0-9]{2,4})|(?:[1-9],[0-9]{3,4}円)|(?:[￥¥][1-9],[0-9]{3,4})')
+thisyear = datetime.date.today().year
 
 with open(outPath, 'w') as f:
     writer = csv.writer(f)
@@ -119,46 +141,6 @@ with open(outPath, 'w') as f:
         ocrResult = ocr(imagePath)
         result = parser(name, ocrResult)
         writer.writerow(result)
-
-
-#一行づつ読み込んで各行に対してチェック
-# samplePath = "./tmp/sample7.txt"
-
-# station_list = []
-# comapny_list = []
-# line_list = []
-# price_list = []
-# date_list = []
-# with open(samplePath) as f:
-#     line = f.readline()
-#     while line:
-#         s = line.strip().replace(" ", "")
-#         #料金を含んでいるかチェック
-#         price = findPrice(s)
-#         if price is not None:  price_list.append(price) 
-#         #日付を含んでいるかチェック
-#         date = findDate(s)
-#         if date is not None: date_list.append(date)
-#         #単語を含んでいるかチェック
-#         words = wordBlockRegex.findall(s)
-#         #単語ごとに該当の駅、会社、路線がチェック
-#         for word in words:
-#             #駅名を含んでいるかチェック
-#             station = findStation(word)
-#             if station is not None: station_list.append(station)
-#             #会社名を含んでいるかチェック
-#             company = findCompany(word)
-#             if company is not None: comapny_list.append(company)
-#             #路線名を含んでいるかチェック
-#             line = findLine(word)
-#             if line is not None: line_list = line              
-#         line = f.readline()
-
-# print(station_list)
-# print(comapny_list)
-# print(line_list)
-# print(price_list)
-# print(date_list)
 
 cur.close()
 conn.close()
