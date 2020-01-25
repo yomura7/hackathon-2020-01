@@ -2,8 +2,8 @@ import os
 import sys
 import csv
 import argparse
-# import pyocr
-# import pyocr.builders
+import pyocr
+import pyocr.builders
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,8 +17,7 @@ if __name__ == '__main__':
     ]
 
     # Check available OCR tools
-    # tools = pyocr.get_available_tools()
-    # tool = tools[0]
+    tools = pyocr.get_available_tools()
 
     writer = csv.writer(args.output)
     for filename in files:
