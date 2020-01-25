@@ -15,10 +15,10 @@ def getFileNameWithExt(path):
     name = os.path.basename(path)
     return name
 
-def ocr(filePath):
+def ocr(filePath, language):
     result = tool.image_to_string(
         Image.open(filePath),
-        lang=LANGUAGE,
+        lang=language,
         builder=pyocr.builders.TextBuilder(tesseract_layout=LAYOUT_NUM))
     imageOutName = './tmp/' + getFileName(filePath) + '.txt'
     with open(imageOutName, 'w') as f:
@@ -35,10 +35,9 @@ def parser(filename, str):
 
 
 DB_PATH = './resource/train.db'
-LANGUAGE = "eng+jpn"
 LAYOUT_NUM = 6
 tools = pyocr.get_available_tools()
-tool = tools[0]
+tool = tools[0] # tesseract
 srcPath = "./images/*.png"
 outPath = "./tmp/result.csv"
 conn = sqlite3.connect(DB_PATH)
@@ -48,7 +47,8 @@ with open(outPath, 'w') as f:
     writer = csv.writer(f)
     for imagePath in glob.glob(srcPath):
         name = getFileNameWithExt(imagePath)
-        ocrResult = ocr(imagePath)
+        ocrResult = ocr(imagePath, "eng+jpn")
+        # ocrResult = ocr(imagePath, "jpn+eng")
         result = parser(name, ocrResult)
         writer.writerow(result)
 
