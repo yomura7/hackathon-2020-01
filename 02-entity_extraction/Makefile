@@ -1,5 +1,3 @@
-.SILENT: run
-
 run:
 	apt-get update
 	apt-get install -qqy tesseract-ocr
