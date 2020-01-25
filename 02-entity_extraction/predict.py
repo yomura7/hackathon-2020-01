@@ -17,7 +17,7 @@ if __name__ == '__main__':
     ]
 
     # Check available OCR tools
-    tools = pyocr.get_available_tools()
+    # tools = pyocr.get_available_tools()
 
     writer = csv.writer(args.output)
     for filename in files:
