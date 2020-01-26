@@ -1,10 +1,9 @@
 .SILENT: run
 
 run:
-	export DEBCONF_NOWARNINGS=yes
 	apt-get -qqy update
-	apt-get -qqy install jq
-	# apt-get -qqy install tesseract-ocr
+	# export DEBCONF_NOWARNINGS=yes
+	apt-get -qqy install tesseract-ocr > /dev/null
 	# apt-get install -qqy tesseract-ocr-jpn
 	# apt-get update && apt-get install -qqy tesseract-ocr libtesseract-dev
 	pip install -q pyocr pillow
