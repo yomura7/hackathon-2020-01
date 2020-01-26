@@ -163,7 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str, default="debug")
     args = parser.parse_args()
 
-    if args.mode != "debug" or args.mode != "ci":
+    if (args.mode != "debug" and args.mode != "ci"):
         exit(0)
 
     if args.mode == "debug":
