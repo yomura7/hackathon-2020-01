@@ -124,9 +124,12 @@ def zeroPadding(date):
         year = int(re.sub(r'-.*', '', date))
         month = int(re.sub(r'.*-(.*)-.*', r'\1', date))
         day = int(re.sub(r'.*-.*-', '', date))
+        return datetime.date(year, month, day).strftime('%Y-%m-%d')
     except ValueError:
         print("Failed to padding date:" + date)
-    return datetime.date(year, month, day).strftime('%Y-%m-%d')
+    except:
+        print("Unexpected error:" + date)
+    return ""
 
 # 19.-12.21のような省略系の日付を変換する。和暦非対応。
 # 2019なのか1919なのか分からないので2000年に倒す
