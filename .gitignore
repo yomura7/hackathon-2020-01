@@ -1,3 +1,4 @@
 .DS_Store
 /02-entity_extraction/tmp/*
 !/02-entity_extraction/tmp/.gitkeep
+pylintrc
