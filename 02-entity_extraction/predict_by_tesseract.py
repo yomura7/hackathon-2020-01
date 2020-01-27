@@ -114,9 +114,16 @@ def findDate(line):
         date = convertFromOmittedDate(date)
     if re.match(r'[0-9]{4}\.-', date) is not None:
         date = re.sub(r'\.-', '-', date)
-    # 年月日、-以外の表記に対応するためには以下を修正する
-    return date.replace("年","-").replace("月","-").replace("日","").replace(".","-")
+    date = date.replace("年", "-").replace("月", "-").replace("日", "").replace(".", "-")
+    #パディング処理
+    date = zeroPadding(date)
+    return date
 
+def zeroPadding(date):
+    year = int(re.sub(r'-.*', '', date))
+    month = int(re.sub(r'.*-(.*)-.*', r'\1', date))
+    day = int(re.sub(r'.*-.*-', '', date))
+    return datetime.date(year, month, day).strftime('%Y-%m-%d')
 
 # 19.-12.21のような省略系の日付を変換する。和暦非対応。
 # 2019なのか1919なのか分からないので2000年に倒す
