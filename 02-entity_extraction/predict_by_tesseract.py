@@ -120,9 +120,12 @@ def findDate(line):
     return date
 
 def zeroPadding(date):
-    year = int(re.sub(r'-.*', '', date))
-    month = int(re.sub(r'.*-(.*)-.*', r'\1', date))
-    day = int(re.sub(r'.*-.*-', '', date))
+    try:
+        year = int(re.sub(r'-.*', '', date))
+        month = int(re.sub(r'.*-(.*)-.*', r'\1', date))
+        day = int(re.sub(r'.*-.*-', '', date))
+    except ValueError:
+        print("Failed to padding date:" + date)
     return datetime.date(year, month, day).strftime('%Y-%m-%d')
 
 # 19.-12.21のような省略系の日付を変換する。和暦非対応。
