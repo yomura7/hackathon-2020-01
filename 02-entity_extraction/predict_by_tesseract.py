@@ -120,7 +120,7 @@ def findDate(line):
         date = zeroPadding(date)
         return date
     except ValueError as e:
-        raise ValueError("Failed to find date in" + line + ", Detail: " + e)
+        raise ValueError("Failed to find date in " + line + ", Detail: " + str(e))
     return ""
 
 def zeroPadding(date):
