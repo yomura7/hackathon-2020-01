@@ -104,20 +104,24 @@ def findPrice(line):
 
 
 def findDate(line):
-    dateRegex = regex.compile('(?:(?:[1-9]|1[0-2])月(?:[1-9]|[12][0-9]|3[01])日)|(?:(?:19[0-9]{2}|20[0-9]{2}|[0-9]{2})\.?-(?:[1-9]|1[0-2])(?:\.|-)(?:3[0-1]|[1-2][0-9]|[1-9]))')
-    dates = dateRegex.findall(line)
-    if len(dates) is 0:
-        return
-    # 最初にマッチした要素を結果にする。修正する必要あるかも
-    date = dates[0]
-    if re.match(r'[0-9]{2}\.-', date) is not None:
-        date = convertFromOmittedDate(date)
-    if re.match(r'[0-9]{4}\.-', date) is not None:
-        date = re.sub(r'\.-', '-', date)
-    date = date.replace("年", "-").replace("月", "-").replace("日", "").replace(".", "-")
-    #パディング処理
-    date = zeroPadding(date)
-    return date
+    try:
+        dateRegex = regex.compile('(?:(?:[1-9]|1[0-2])月(?:[1-9]|[12][0-9]|3[01])日)|(?:(?:19[0-9]{2}|20[0-9]{2}|[0-9]{2})\.?-(?:[1-9]|1[0-2])(?:\.|-)(?:3[0-1]|[1-2][0-9]|[1-9]))')
+        dates = dateRegex.findall(line)
+        if len(dates) is 0:
+            return
+        # 最初にマッチした要素を結果にする。修正する必要あるかも
+        date = dates[0]
+        if re.match(r'[0-9]{2}\.-', date) is not None:
+            date = convertFromOmittedDate(date)
+        if re.match(r'[0-9]{4}\.-', date) is not None:
+            date = re.sub(r'\.-', '-', date)
+        date = date.replace("年", "-").replace("月", "-").replace("日", "").replace(".", "-")
+        #パディング処理
+        date = zeroPadding(date)
+        return date
+    except ValueError as e:
+        raise ValueError("Failed to find date in" + line + ", Detail: " + e)
+    return ""
 
 def zeroPadding(date):
     try:
