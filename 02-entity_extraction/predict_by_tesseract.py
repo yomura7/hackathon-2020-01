@@ -77,21 +77,20 @@ def parse(filename, text):
     issued_on = date_list[0] if len(date_list) > 0 else ""
     return [filename,origin,dest,line,company,price,issued_on,issued_on,issued_on]
 
-
-# 初めにマッチしたものを返す　可能性の高い駅順に並べる必要あるかも
 def findStation(word):
+    #TODO 初めにマッチしたものを返す　可能性の高い駅順に並べる必要あるかも
     for row in cur.execute('SELECT station_name FROM station WHERE station_name like ?', (word,)):
         return row[0]
 
 
 def findCompany(word):
-    # 初めにマッチしたものを返す　可能性の高い会社順に並べる必要あるかも
+    #TODO 初めにマッチしたものを返す　可能性の高い会社順に並べる必要あるかも
     for row in cur.execute('SELECT company_name FROM company WHERE company_name like ?', (word,)):
         return row[0]
 
 
 def findLine(word):
-    # 初めにマッチしたものを返す　可能性の高い路線順に並べる必要あるかも
+    #TODO 初めにマッチしたものを返す　可能性の高い路線順に並べる必要あるかも
     for row in cur.execute('SELECT line_name FROM line WHERE line_name like ?', (word,)):
         return row[0]
 
@@ -105,11 +104,13 @@ def findPrice(line):
 
 def findDate(line):
     try:
-        dateRegex = regex.compile('(?:(?:[1-9]|1[0-2])月(?:[1-9]|[12][0-9]|3[01])日)|(?:(?:19[0-9]{2}|20[0-9]{2}|[0-9]{2})\.?-(?:[1-9]|1[0-2])(?:\.|-)(?:3[0-1]|[1-2][0-9]|[1-9]))')
+        #TODO: 年が存在しない場合など、断片的にOCRできる場合に予測できるように変更する必要があるかも
+        #TODO: リファクタリング　冗長なのでつなぎ文字をorにして短くする
+        dateRegex = regex.compile('(?:(?:19[0-9]{2}|20[0-9]{2}|[0-9]{2})年(?:[1-9]|1[0-2])月(?:[1-9]|[12][0-9]|3[01])日)|(?:(?:19[0-9]{2}|20[0-9]{2}|[0-9]{2})\.?-(?:[1-9]|1[0-2])(?:\.|-)(?:3[0-1]|[1-2][0-9]|[1-9]))')
         dates = dateRegex.findall(line)
         if len(dates) is 0:
             return
-        # 最初にマッチした要素を結果にする。修正する必要あるかも
+        #TODO: 最初にマッチした要素を結果にする。修正する必要あるかも
         date = dates[0]
         if re.match(r'[0-9]{2}\.-', date) is not None:
             date = convertFromOmittedDate(date)
@@ -119,9 +120,9 @@ def findDate(line):
         #パディング処理
         date = zeroPadding(date)
         return date
-    except ValueError as e:
-        raise ValueError("Failed to find date in " + line + ", Detail: " + str(e))
-    return ""
+    except:
+        #raise ValueError("Failed to find date in " + line + ", Detail: " + str(e))
+        return ""
 
 def zeroPadding(date):
     try:
@@ -130,8 +131,8 @@ def zeroPadding(date):
         day = int(re.sub(r'.*-.*-', '', date))
         return datetime.date(year, month, day).strftime('%Y-%m-%d')
     except:
-        raise ValueError("Failed to padding date:" + date)
-    return ""
+        #raise ValueError("Failed to padding date:" + date)
+        return ""
 
 # 19.-12.21のような省略系の日付を変換する。和暦非対応。
 # 2019なのか1919なのか分からないので2000年に倒す
