@@ -172,7 +172,7 @@ def print_to_stdout(files):
 if __name__ == '__main__':
     # constant
     db_path = './resource/train.db'
-    layout_num = 6
+    layout_num = 11
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout)
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     for filename in files:
         filepath = image_dir + "/" + filename
         # TODO: preprocess
-        ocr_result = ocr(filepath, tool, "eng+jpn", layout_num)
+        ocr_result = ocr(filepath, tool, "emg+jpn+jpn-best+kanji_10000", layout_num)
         result = parse(filename, ocr_result)
 
         # debug
