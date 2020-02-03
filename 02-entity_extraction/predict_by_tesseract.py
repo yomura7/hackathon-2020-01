@@ -208,7 +208,7 @@ if __name__ == '__main__':
     for filename in files:
         filepath = image_dir + "/" + filename
         # TODO: preprocess
-        ocr_result = ocr(filepath, tool, "emg+jpn+jpn-best+kanji_10000", layout_num)
+        ocr_result = ocr(filepath, tool, "eng+jpn", layout_num)
         result = parse(filename, ocr_result)
 
         # debug
