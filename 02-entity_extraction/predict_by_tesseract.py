@@ -238,6 +238,7 @@ if __name__ == '__main__':
             print(result)
 
         writer.writerow(result)
+        os.remove(tmpImgPath)
 
     cur.close()
     conn.close()
