@@ -182,8 +182,8 @@ def convertAndSaveImage(filepath, filename):
     # # equ = cv2.equalizeHist(dst)
     # #閾値処理
     # #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
-    # ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(outputfilepath, dst)
+    ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
+    cv2.imwrite(outputfilepath, dst2)
     # return outputfilepath
     return outputfilepath
 
