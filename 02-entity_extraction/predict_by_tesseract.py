@@ -177,13 +177,13 @@ def convertAndSaveImage(filepath, filename):
     outputfilepath = "./tmp/" + filename
     img = cv2.imread(filepath, 0)
     # # ノイズ除去
-    # dst = cv2.fastNlMeansDenoising(img)
+    dst = cv2.fastNlMeansDenoising(img)
     # # ヒストグラム平坦化　←微妙
     # # equ = cv2.equalizeHist(dst)
     # #閾値処理
     # #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
     # ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(outputfilepath, img)
+    cv2.imwrite(outputfilepath, dst)
     # return outputfilepath
     return outputfilepath
 
