@@ -4,16 +4,17 @@ import os
 import sys
 import csv
 import argparse
-from PIL import Image
-import pyocr
-import pyocr.builders
 import sqlite3
 import re
-import regex
 import io
 import unicodedata
 import datetime
-
+import regex
+import cv2
+import numpy as np
+from PIL import Image
+import pyocr
+import pyocr.builders
 
 def getFileName(path):
     name = os.path.splitext(os.path.basename(path))[0]
@@ -77,6 +78,7 @@ def parse(filename, text):
     issued_on = date_list[0] if len(date_list) > 0 else ""
     return [filename,origin,dest,line,company,price,issued_on,issued_on,issued_on]
 
+
 def findStation(word):
     #TODO 初めにマッチしたものを返す　可能性の高い駅順に並べる必要あるかも
     for row in cur.execute('SELECT station_name FROM station WHERE station_name like ?', (word,)):
@@ -124,6 +126,7 @@ def findDate(line):
         #raise ValueError("Failed to find date in " + line + ", Detail: " + str(e))
         return ""
 
+
 def zeroPadding(date):
     try:
         year = int(re.sub(r'-.*', '', date))
@@ -133,6 +136,7 @@ def zeroPadding(date):
     except:
         #raise ValueError("Failed to padding date:" + date)
         return ""
+
 
 # 19.-12.21のような省略系の日付を変換する。和暦非対応。
 # 2019なのか1919なのか分からないので2000年に倒す
@@ -167,6 +171,20 @@ def print_to_stdout(files):
         writer.writerow([
             filename, origin, destination, line, company,
             price, issued_on, available_from, expire_on])
+
+
+def convertAndSaveImage(filepath, filename):
+    outputfilepath = "./tmp/" + filename
+    img = cv2.imread(filepath, 0)
+    # ノイズ除去
+    dst = cv2.fastNlMeansDenoising(img)
+    # ヒストグラム平坦化　←微妙
+    # equ = cv2.equalizeHist(dst)
+    #閾値処理
+    #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
+    ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
+    cv2.imwrite(outputfilepath, dst2)
+    return outputfilepath
 
 
 if __name__ == '__main__':
@@ -207,8 +225,8 @@ if __name__ == '__main__':
 
     for filename in files:
         filepath = image_dir + "/" + filename
-        # TODO: preprocess
-        ocr_result = ocr(filepath, tool, "eng+jpn", layout_num)
+        tmpImgPath = convertAndSaveImage(filepath, filename)
+        ocr_result = ocr(tmpImgPath, tool, "eng+jpn", layout_num)
         result = parse(filename, ocr_result)
 
         # debug

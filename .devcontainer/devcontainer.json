@@ -3,7 +3,8 @@
     "dockerFile": "Dockerfile",
     "settings": {
         "terminal.integrated.shell.linux": "/bin/bash",
-        "python.pythonPath": "/usr/local/bin/python"
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.linting.pylintArgs": ["--extension-pkg-whitelist=cv2"]
     },
     "extensions": [
         "ms-python.python"

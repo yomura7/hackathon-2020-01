@@ -1,4 +1,4 @@
-FROM python:3.9.0a2-buster
+FROM python:3.7.3
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -13,6 +13,8 @@ RUN apt-get update \
     pyocr \
     pillow \
     regex \
+    opencv-python \
+    pylint \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*

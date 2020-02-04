@@ -1,5 +1,15 @@
 {
     "recommendations": [
         "ms-vscode-remote.remote-containers"
-    ]
+    ],
+    "pylint": {
+        "@disable": false,
+        "args": ["--extension-pkg-whitelist=numpy, cv2"],
+        "disable": "",
+        "enable": "",
+        "excludes": [],
+        "paths": [],
+        "rcfile": "",
+        "show-codes": false
+    }
 }
