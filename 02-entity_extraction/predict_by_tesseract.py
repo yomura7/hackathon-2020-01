@@ -174,18 +174,21 @@ def print_to_stdout(files):
 
 
 def convertAndSaveImage(filepath, filename):
-    outputfilepath = "./tmp/" + filename
-    img = cv2.imread(filepath, 0)
-    # # ノイズ除去
-    dst = cv2.fastNlMeansDenoising(img)
-    # # ヒストグラム平坦化　←微妙
-    # # equ = cv2.equalizeHist(dst)
-    # #閾値処理
-    # #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
-    ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(outputfilepath, dst2)
-    # return outputfilepath
-    return outputfilepath
+    try:
+        outputfilepath = "./tmp/" + filename
+        img = cv2.imread(filepath, 0)
+        # # ノイズ除去
+        dst = cv2.fastNlMeansDenoising(img)
+        # # ヒストグラム平坦化　←微妙
+        # # equ = cv2.equalizeHist(dst)
+        # #閾値処理
+        # #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
+        ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
+        cv2.imwrite(outputfilepath, dst2)
+        # return outputfilepath
+        return outputfilepath
+    except Exception as e:
+        raise Exception("Internal error at convertAndSaveImage: "+ str(e) + ", Error type: " + type(e))
 
 
 if __name__ == '__main__':
