@@ -1,4 +1,6 @@
 .DS_Store
+/02-entity_extraction/test/*
+!/02-entity_extraction/test/converter_test.py
 /02-entity_extraction/tmp/*
 !/02-entity_extraction/tmp/.gitkeep
 pylintrc

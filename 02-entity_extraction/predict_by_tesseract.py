@@ -175,20 +175,34 @@ def print_to_stdout(files):
 
 def convertAndSaveImage(filepath, filename):
     try:
+
+        # black = np.uint8([[[0,0,0 ]]])
+        # hsv_black = cv2.cvtColor(black,cv2.COLOR_BGR2HSV)
+        # print(hsv_black)
+
         outputfilepath = "./tmp/" + filename
-        img = cv2.imread(filepath, 0)
+        img = cv2.imread(filepath)
+        # print("@@@@@@")
+        # print(img)
+        # hsv = np.array([[[255,0,0]]*100]*100)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        lower_blue = np.array([0,0,0])
+        upper_blue = np.array([179,128,100])
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        # res = cv2.bitwise_and(img,img, mask= mask)
+        res = cv2.bitwise_not(mask)
         # # ノイズ除去
-        dst = cv2.fastNlMeansDenoising(img)
+        res2 = cv2.fastNlMeansDenoising(res)
         # # ヒストグラム平坦化　←微妙
         # # equ = cv2.equalizeHist(dst)
         # #閾値処理
         # #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
-        ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
-        cv2.imwrite(outputfilepath, dst2)
+        # ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
+        cv2.imwrite(outputfilepath, res2)
         # return outputfilepath
         return outputfilepath
     except Exception as e:
-        raise Exception("Internal error at convertAndSaveImage: "+ str(e) + ", Error type: " + type(e))
+        raise Exception("Internal error at convertAndSaveImage: "+ str(e))
 
 
 if __name__ == '__main__':
@@ -238,7 +252,8 @@ if __name__ == '__main__':
             print(result)
 
         writer.writerow(result)
-        os.remove(tmpImgPath)
+        if args.mode != "debug":
+            os.remove(tmpImgPath)
 
     cur.close()
     conn.close()
