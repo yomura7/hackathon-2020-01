@@ -48,12 +48,12 @@ def parse(filename, text):
     buf = io.StringIO(text)
     line = buf.readline()
     while line:
-        s = unicodedata.normalize("NFKC",line.strip().replace(" ", ""))
+        s = unicodedata.normalize("NFKC",line.strip().replace(" ", "").replace("〇","0"))
         # 料金を含んでいるかチェック
-        price = findPrice(s)
+        price = findPrice(s.replace("門","円"))
         if price is not None:  price_list.append(price)
         # 日付を含んでいるかチェック
-        date = findDate(s)
+        date = findDate(s.replace("臼","日"))
         if date is not None: date_list.append(date)
         # 単語を含んでいるかチェック
         words = wordBlockRegex.findall(s)
@@ -71,7 +71,11 @@ def parse(filename, text):
         line = buf.readline()
     filename = filename if filename is not None else ""
     origin = station_list[0] if len(station_list) > 0 else ""
-    dest = station_list[1] if len(station_list) > 1 else ""
+    # 1つの駅名しか取得できなかった場合には0番目の駅名をdestにもつめる
+    if len(station_list) > 1:
+        dest = station_list[1]
+    else:
+        dest = station_list[0] if len(station_list) > 0 else ""
     line = line_list[0] if len(line_list) > 0 else ""
     company = comapny_list[0] if len(comapny_list) > 0 else ""
     price = price_list[0] if len(price_list) > 0 else 0
@@ -173,17 +177,14 @@ def print_to_stdout(files):
             price, issued_on, available_from, expire_on])
 
 
-def convertAndSaveImage(filepath, filename):
+def convertAndSaveImage(filepath, filename, threshold):
     try:
-        outputfilepath = "./tmp/" + filename
+        outputfilepath = "./tmp/" + getFileName(filepath) + "_" + str(threshold) +".png"
         img = cv2.imread(filepath, 0)
-        # # ノイズ除去
+        # ノイズ除去
         dst = cv2.fastNlMeansDenoising(img)
-        # # ヒストグラム平坦化　←微妙
-        # # equ = cv2.equalizeHist(dst)
-        # #閾値処理
-        # #thresh2 = cv2.fastNlMeansDenoising(dst2))　←2回目掛けるとかすれる。
-        ret, dst2 = cv2.threshold(dst, 160, 255, cv2.THRESH_BINARY)
+        # 閾値処理
+        ret, dst2 = cv2.threshold(dst, threshold, 255, cv2.THRESH_BINARY)
         cv2.imwrite(outputfilepath, dst2)
         # return outputfilepath
         return outputfilepath
@@ -195,6 +196,7 @@ if __name__ == '__main__':
     # constant
     db_path = './resource/train.db'
     layout_num = 6
+    th_range = 10
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout)
@@ -229,16 +231,24 @@ if __name__ == '__main__':
 
     for filename in files:
         filepath = image_dir + "/" + filename
-        tmpImgPath = convertAndSaveImage(filepath, filename)
-        ocr_result = ocr(tmpImgPath, tool, "eng+jpn", layout_num)
-        result = parse(filename, ocr_result)
+        img = cv2.imread(filepath,0)
+        ret, img_otsu = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
+
+        ocrStr = ""
+        for th in range(int(ret)-th_range, int(ret)+th_range+1, 1):
+            tmpImgPath = convertAndSaveImage(filepath, filename, th)
+            ocr_result = ocr(tmpImgPath, tool, "eng+jpn", layout_num)
+            ocrStr += ocr_result
+            os.remove(tmpImgPath)
+
+        print(ocrStr)
+        result = parse(filename, ocrStr)
 
         # debug
         if args.mode == "debug":
             print(result)
 
         writer.writerow(result)
-        os.remove(tmpImgPath)
 
     cur.close()
     conn.close()
