@@ -235,7 +235,7 @@ if __name__ == '__main__':
         ret, img_otsu = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
 
         ocrStr = ""
-        for th in range(int(ret)-th_range, int(ret)+th_range+1, 1):
+        for th in range(int(ret), int(ret)+th_range+1, 1):
             tmpImgPath = convertAndSaveImage(filepath, filename, th)
             ocr_result = ocr(tmpImgPath, tool, "eng+jpn", layout_num)
             ocrStr += ocr_result
