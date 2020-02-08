@@ -48,12 +48,12 @@ def parse(filename, text):
     buf = io.StringIO(text)
     line = buf.readline()
     while line:
-        s = unicodedata.normalize("NFKC",line.strip().replace(" ", ""))
+        s = unicodedata.normalize("NFKC",line.strip().replace(" ", "").replace("〇","0"))
         # 料金を含んでいるかチェック
-        price = findPrice(s)
+        price = findPrice(s.replace("門","円"))
         if price is not None:  price_list.append(price)
         # 日付を含んでいるかチェック
-        date = findDate(s)
+        date = findDate(s.replace("臼","日"))
         if date is not None: date_list.append(date)
         # 単語を含んでいるかチェック
         words = wordBlockRegex.findall(s)
