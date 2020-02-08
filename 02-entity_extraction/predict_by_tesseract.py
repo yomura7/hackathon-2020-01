@@ -71,7 +71,11 @@ def parse(filename, text):
         line = buf.readline()
     filename = filename if filename is not None else ""
     origin = station_list[0] if len(station_list) > 0 else ""
-    dest = station_list[1] if len(station_list) > 1 else ""
+     # 1つの駅名しか取得できなかった場合には0番目の駅名をdestにもつめる
+    if len(station_list) > 1:
+        dest = station_list[1]
+    else:
+        dest = station_list[0] if len(station_list) > 0 else ""
     line = line_list[0] if len(line_list) > 0 else ""
     company = comapny_list[0] if len(comapny_list) > 0 else ""
     price = price_list[0] if len(price_list) > 0 else 0
