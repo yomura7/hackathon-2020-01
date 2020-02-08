@@ -99,8 +99,8 @@ def parse(filename, text):
 
 def findStation(word):
     # 同一文字数かつ頻出順
-    query = 'SELECT DISTINCT station_name FROM station WHERE LENGTH(station_name) = ' + str(len(word)) + ' and station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
-    # query = 'SELECT DISTINCT station_name FROM station WHERE station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
+    # query = 'SELECT DISTINCT station_name FROM station WHERE LENGTH(station_name) = ' + str(len(word)) + ' and station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
+    query = 'SELECT DISTINCT station_name FROM station WHERE station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
 
     candidate = ''
 
