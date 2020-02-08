@@ -81,15 +81,8 @@ def parse(filename, text):
             if line is not None: line_list = line
         line = buf.readline()
 
-    if origin == '':
-        if len(station_candidate) > 1:
-            origin = station_candidate[0]
-            dest = station_candidate[1]
-        elif len(station_candidate) == 1:
-            origin = station_candidate[0]
-            dest = origin
-
     filename = filename if filename is not None else ""
+    origin = station_candidate[0] if orgin == ''
     line = line_list[0] if len(line_list) > 0 else ""
     company = comapny_list[0] if len(comapny_list) > 0 else ""
     price = price_list[0] if len(price_list) > 0 else 0
@@ -99,8 +92,8 @@ def parse(filename, text):
 
 def findStation(word):
     # 同一文字数かつ頻出順
-    # query = 'SELECT DISTINCT station_name FROM station WHERE LENGTH(station_name) = ' + str(len(word)) + ' and station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
-    query = 'SELECT DISTINCT station_name FROM station WHERE station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
+    query = 'SELECT DISTINCT station_name FROM station WHERE LENGTH(station_name) = ' + str(len(word)) + ' and station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
+    # query = 'SELECT DISTINCT station_name FROM station WHERE station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
 
     candidate = ''
 
@@ -109,13 +102,13 @@ def findStation(word):
     if (len(perfect_result) > 0):
         return (perfect_result[0], '')
 
-    # if (len(word) > 2):
-    #     backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
-    #     forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
-    #     middle_result = [row[0] for row in cur.execute(query, (word[0] + '%' + word[-1],))]
-    #     result = backward_result or forward_result or middle_result
-    #     if (len(result) > 0):
-    #         candidate = result[0]
+    if (len(word) > 2):
+        backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
+        forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
+        middle_result = [row[0] for row in cur.execute(query, (word[0] + '%' + word[-1],))]
+        result = backward_result or forward_result or middle_result
+        if (len(result) > 0):
+            candidate = result[0]
 
     # if (len(word) == 2):
     #     # 最初の文字の後方一致(優先)
