@@ -109,13 +109,13 @@ def findStation(word):
     if (len(perfect_result) > 0):
         return (perfect_result[0], '')
 
-    if (len(word) > 2):
-        backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
-        forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
-        middle_result = [row[0] for row in cur.execute(query, (word[0] + '%' + word[-1],))]
-        result = backward_result or forward_result or middle_result
-        if (len(result) > 0):
-            candidate = result[0]
+    # if (len(word) > 2):
+    #     backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
+    #     forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
+    #     middle_result = [row[0] for row in cur.execute(query, (word[0] + '%' + word[-1],))]
+    #     result = backward_result or forward_result or middle_result
+    #     if (len(result) > 0):
+    #         candidate = result[0]
 
     # if (len(word) == 2):
     #     # 最初の文字の後方一致(優先)
