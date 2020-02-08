@@ -196,8 +196,8 @@ if __name__ == '__main__':
     # constant
     db_path = './resource/train.db'
     layout_num = 6
-    th_range = 10
-    step = 5
+    th_range = 0
+    step = 1
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('-o', '--output', type=argparse.FileType('w'), default=sys.stdout)
