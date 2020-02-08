@@ -81,8 +81,9 @@ def parse(filename, text):
             if line is not None: line_list = line
         line = buf.readline()
 
+    if (origin == '' and len(station_candidate) > 0):
+        origin = station_candidate[0]
     filename = filename if filename is not None else ""
-    origin = station_candidate[0] if origin == ''
     line = line_list[0] if len(line_list) > 0 else ""
     company = comapny_list[0] if len(comapny_list) > 0 else ""
     price = price_list[0] if len(price_list) > 0 else 0
