@@ -66,8 +66,8 @@ def parse(filename, text):
         for word in words:
             # 駅名の完全一致と部分一致をチェック
             perfect, partial = findStation(word)
-            if (len(partial) > 0):
-                station_candidate.extend(partial)
+            if (partial != ''):
+                station_candidate.append(partial)
             if (origin == ''):
                 origin = perfect
             elif (origin != '' and dest == ''):
@@ -81,16 +81,14 @@ def parse(filename, text):
             if line is not None: line_list = line
         line = buf.readline()
 
-    if (origin == '' and len(station_candidate) > 0):
-        common_station = collections.Counter(station_candidate).most_common()
-        origin = common_station[0][0]
-    if (dest == ''):
+    if origin == '':
         if len(station_candidate) > 1:
-            dest = collections.Counter(station_candidate).most_common()[1][0]
-        elif len(station_candidate) > 0:
-            dest = collections.Counter(station_candidate).most_common()[0][0]
-        else:
+            origin = station_candidate[0]
+            dest = station_candidate[1]
+        elif len(station_candidate) == 1:
+            origin = station_candidate[0]
             dest = origin
+
     filename = filename if filename is not None else ""
     line = line_list[0] if len(line_list) > 0 else ""
     company = comapny_list[0] if len(comapny_list) > 0 else ""
@@ -104,29 +102,37 @@ def findStation(word):
     query = 'SELECT DISTINCT station_name FROM station WHERE LENGTH(station_name) = ' + str(len(word)) + ' and station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
     # query = 'SELECT DISTINCT station_name FROM station WHERE station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
 
+    candidate = ''
+
     # 完全一致
     perfect_result = [row[0] for row in cur.execute(query, (word,))]
     if (len(perfect_result) > 0):
-        return (perfect_result[0], [])
+        return (perfect_result[0], '')
 
-    candidate = []
-    if (len(word) == 2):
-        candidate = []
-        # 最初の文字の後方一致
-        backward_result = [row[0] for row in cur.execute(query, (word[0] + '%',))]
-        if (len(backward_result) > 0):
-            candidate.append(backward_result[0])
-        # 最後の文字の前方一致
-        forward_result = [row[0] for row in cur.execute(query, ('%' + word[-1],))]
-        if (len(forward_result) > 0):
-            candidate.append(forward_result[0])
-    elif (len(word) > 2):
+    if (len(word) > 2):
         backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
         forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
-        and_result = backward_result and forward_result
-        if (len(and_result) > 0):
-            candidate.extend(and_result)
+        middle_result = [row[0] for row in cur.execute(query, (word[0] + '%' + word[-1],))]
+        result = backward_result or forward_result or middle_result
+        if (len(result) > 0):
+            candidate = result[0]
 
+    # if (len(word) == 2):
+    #     # 最初の文字の後方一致(優先)
+    #     backward_result = [row[0] for row in cur.execute(query, (word[0] + '%',))]
+    #     # 最後の文字の前方一致
+    #     forward_result = [row[0] for row in cur.execute(query, ('%' + word[-1],))]
+    #     if (len(backward_result) > 0):
+    #         candidate = backward_result[0]
+    #     elif (len(forward_result) > 0):
+    #         candidate = forward_result[0]
+    # elif (len(word) > 2):
+    #     backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
+    #     forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
+    #     middle_result = [row[0] for row in cur.execute(query, (word[0] + '%' + word[-1],))]
+    #     result = backward_result or forward_result or middle_result
+    #     if (len(result) > 0):
+    #         candidate = result[0]
     return ('', candidate)
 
 
@@ -234,7 +240,6 @@ def convertAndSaveImage(filepath, filename):
         return outputfilepath
     except Exception as e:
         raise Exception("Internal error at convertAndSaveImage: "+ str(e) + ", Error type: " + type(e))
-
 
 if __name__ == '__main__':
     # constant
