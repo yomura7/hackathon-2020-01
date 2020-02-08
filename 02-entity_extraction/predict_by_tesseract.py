@@ -15,6 +15,8 @@ import numpy as np
 from PIL import Image
 import pyocr
 import pyocr.builders
+import collections
+
 
 def getFileName(path):
     name = os.path.splitext(os.path.basename(path))[0]
@@ -40,7 +42,10 @@ def ocr(filePath, tool, language, layout):
 # filename,origin,destination,line,company,price,issued_on,available_from,expire_on
 def parse(filename, text):
     wordBlockRegex = regex.compile(r'[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]+')
-    station_list = []
+    # station_list = []
+    origin = ''
+    dest = ''
+    station_candidate = []
     comapny_list = []
     line_list = []
     price_list = []
@@ -59,9 +64,15 @@ def parse(filename, text):
         words = wordBlockRegex.findall(s)
         # 単語ごとに該当の駅、会社、路線がチェック
         for word in words:
-            # 駅名を含んでいるかチェック
-            station = findStation(word)
-            if station is not None: station_list.append(station)
+            # 駅名の完全一致と部分一致をチェック
+            perfect, partial = findStation(word)
+            if (len(partial) > 0):
+                station_candidate.extend(partial)
+            if (origin == ''):
+                origin = perfect
+            elif (origin != '' and dest == ''):
+                dest = perfect
+
             # 会社名を含んでいるかチェック
             company = findCompany(word)
             if company is not None: comapny_list.append(company)
@@ -69,9 +80,18 @@ def parse(filename, text):
             line = findLine(word)
             if line is not None: line_list = line
         line = buf.readline()
+
+    if (origin == '' and len(station_candidate) > 0):
+        common_station = collections.Counter(station_candidate).most_common()
+        origin = common_station[0][0]
+    if (dest == ''):
+        if len(station_candidate) > 1:
+            dest = collections.Counter(station_candidate).most_common()[1][0]
+        elif len(station_candidate) > 0:
+            dest = collections.Counter(station_candidate).most_common()[0][0]
+        else:
+            dest = origin
     filename = filename if filename is not None else ""
-    origin = station_list[0] if len(station_list) > 0 else ""
-    dest = station_list[1] if len(station_list) > 1 else ""
     line = line_list[0] if len(line_list) > 0 else ""
     company = comapny_list[0] if len(comapny_list) > 0 else ""
     price = price_list[0] if len(price_list) > 0 else 0
@@ -80,9 +100,34 @@ def parse(filename, text):
 
 
 def findStation(word):
-    #TODO 初めにマッチしたものを返す　可能性の高い駅順に並べる必要あるかも
-    for row in cur.execute('SELECT station_name FROM station WHERE station_name like ?', (word,)):
-        return row[0]
+    # 同一文字数かつ頻出順
+    query = 'SELECT DISTINCT station_name FROM station WHERE LENGTH(station_name) = ' + str(len(word)) + ' and station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
+    # query = 'SELECT DISTINCT station_name FROM station WHERE station_name like ? GROUP BY station_name ORDER BY count(*) DESC'
+
+    # 完全一致
+    perfect_result = [row[0] for row in cur.execute(query, (word,))]
+    if (len(perfect_result) > 0):
+        return (perfect_result[0], [])
+
+    candidate = []
+    if (len(word) == 2):
+        candidate = []
+        # 最初の文字の後方一致
+        backward_result = [row[0] for row in cur.execute(query, (word[0] + '%',))]
+        if (len(backward_result) > 0):
+            candidate.append(backward_result[0])
+        # 最後の文字の前方一致
+        forward_result = [row[0] for row in cur.execute(query, ('%' + word[-1],))]
+        if (len(forward_result) > 0):
+            candidate.append(forward_result[0])
+    elif (len(word) > 2):
+        backward_result = [row[0] for row in cur.execute(query, (word[0] + word[1] + '%',))]
+        forward_result = [row[0] for row in cur.execute(query, ('%' + word[-2] + word[-1],))]
+        and_result = backward_result and forward_result
+        if (len(and_result) > 0):
+            candidate.extend(and_result)
+
+    return ('', candidate)
 
 
 def findCompany(word):
